@@ -32,12 +32,25 @@ yarn-error.log*
 
 # local dev logs
 *.log
+dev-server*.log
+build.log
 
 # local typecheck artifacts
 tsc_*.txt
 
+# Test files
+test_*.ts
+
 # env files (can opt-in for committing if needed)
 .env*
+.env
+.env.local
+.env.production
+.env.staging
+
+# Build output
+.next/
+node_modules/
 
 # vercel
 .vercel
@@ -45,6 +58,10 @@ tsc_*.txt
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# OS files
+.DS_Store
+Thumbs.db
 
 # project meta files — internal, not for version control
 .claude/
