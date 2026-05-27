@@ -6,20 +6,31 @@ import { useState } from 'react'
 import Modal from '@/components/ui/Modal'
 import toast from 'react-hot-toast'
 
+interface Vehicle {
+  id: string
+  name: string
+  type: string | null
+}
+
+interface CreateVehiclePayload {
+  name: string
+  type?: string
+}
+
 export default function VehiclesPage() {
   const qc = useQueryClient()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [name, setName] = useState('')
   const [type, setType] = useState('')
 
-  const { data: vehicles, isLoading } = useQuery({
+  const { data: vehicles, isLoading } = useQuery<Vehicle[]>({
     ...defaultQueryOptions,
     queryKey: ['vehicles'],
     queryFn: () => fetch('/api/vehicles').then(r => r.json())
   })
 
   const createVehicle = useMutation({
-    mutationFn: async (payload: { name: string; type?: string }) => {
+    mutationFn: async (payload: CreateVehiclePayload) => {
       const r = await fetch('/api/vehicles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -38,7 +49,7 @@ export default function VehiclesPage() {
       setName('')
       setType('')
     },
-    onError: (e: any) => toast.error(e.message)
+    onError: (e: Error) => toast.error(e.message)
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -60,14 +71,16 @@ export default function VehiclesPage() {
           onClick={() => setIsFormOpen(true)}
           className="h-11 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2"
         >
-          <span className="text-base leading-none text-xl translate-y-[-1px]">+</span>
+          <span className="text-base leading-none">+</span>
           Add Vehicle
         </button>
       </div>
 
       {isLoading ? (
         <div className="space-y-3">
-          {[...Array(3)].map((_, i) => <div key={i} className="h-20 bg-gray-100 rounded-2xl animate-pulse" />)}
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-20 bg-gray-100 rounded-2xl animate-pulse" />
+          ))}
         </div>
       ) : vehicles?.length === 0 ? (
         <div className="text-center py-16 bg-white border border-gray-200 rounded-3xl">
@@ -87,8 +100,8 @@ export default function VehiclesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {vehicles.map((v: any) => (
-                  <tr key={v.id} className="hover:bg-gray-50/50 transition-colors group">
+                {vehicles?.map((v) => (
+                  <tr key={v.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 font-bold text-gray-900">{v.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">{v.type || 'Manual/Auto'}</td>
                     <td className="px-6 py-4 text-right">
@@ -107,7 +120,9 @@ export default function VehiclesPage() {
       <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title="Add Vehicle">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Vehicle Name / ID</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
+              Vehicle Name / ID
+            </label>
             <input
               type="text"
               required
@@ -118,7 +133,9 @@ export default function VehiclesPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Transmission Type</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
+              Transmission Type
+            </label>
             <select
               value={type}
               onChange={e => setType(e.target.value)}

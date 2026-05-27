@@ -1,12 +1,12 @@
 import type { LessonListItem } from '@/types/lesson'
 import LessonStatusBadge from './LessonStatusBadge'
 
-export default function LessonCard({ lesson, onClick }: { lesson: LessonListItem, onClick: () => void }) {
+export default function LessonCard({ lesson, onClick }: { lesson: LessonListItem; onClick: () => void }) {
   const d = new Date(lesson.scheduledDate)
   const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  
+
   return (
-    <button 
+    <button
       onClick={onClick}
       className="w-full text-left bg-white border border-gray-200 rounded-2xl p-4 hover:border-blue-300 hover:shadow-sm transition-all focus:outline-none"
     >
@@ -15,13 +15,11 @@ export default function LessonCard({ lesson, onClick }: { lesson: LessonListItem
           <h3 className="font-bold text-gray-900 leading-tight">{lesson.student.fullName}</h3>
           <p className="text-xs text-gray-500 mt-0.5">{lesson.student.studentCode}</p>
         </div>
-        <div className="text-right flex flex-col items-end">
-          <span className="font-semibold text-gray-900 text-sm bg-gray-50 px-2 py-1 rounded-lg border border-gray-100">
-            {timeStr}
-          </span>
-        </div>
+        <span className="font-semibold text-gray-900 text-sm bg-gray-50 px-2 py-1 rounded-lg border border-gray-100">
+          {timeStr}
+        </span>
       </div>
-      
+
       <div className="flex gap-2 text-xs text-gray-600 mb-3">
         {lesson.instructor && (
           <span className="flex items-center gap-1 bg-gray-50 px-2 h-6 rounded-md">
