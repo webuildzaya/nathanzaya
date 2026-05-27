@@ -28,9 +28,10 @@ export default function StudentProfilePage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { data: session } = useSession()
-  const isSuperAdmin = (session?.user as { role?: string })?.role === 'SUPER_ADMIN'
+  const isSuperAdmin = session?.user?.role === 'SUPER_ADMIN'
 
   const [showLinkModal, setShowLinkModal] = useState(false)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [magicLink, setMagicLink] = useState('')
   const [copied, setCopied] = useState(false)
 
@@ -47,6 +48,7 @@ export default function StudentProfilePage() {
       if (json.magicLink) {
         setMagicLink(json.magicLink)
         setShowLinkModal(true)
+        setShowConfirmModal(false)
         queryClient.invalidateQueries({ queryKey: ['student', id] })
       } else {
         toast.error(json.error ?? 'Failed to regenerate link')
@@ -103,7 +105,6 @@ export default function StudentProfilePage() {
       {/* Profile header card */}
       <div className="bg-white border border-gray-200 rounded-2xl p-5">
         <div className="flex items-start gap-4">
-          {/* Avatar */}
           <div className="h-16 w-16 rounded-full bg-blue-50 flex items-center justify-center overflow-hidden flex-shrink-0">
             {s.photoUrl ? (
               <Image
@@ -117,16 +118,12 @@ export default function StudentProfilePage() {
               <span className="text-blue-600 font-bold text-xl">{initials}</span>
             )}
           </div>
-
-          {/* Name + code */}
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold text-gray-900 leading-tight">{s.fullName}</h1>
             <p className="text-sm text-gray-500 mt-0.5">{s.studentCode}</p>
             <p className="text-xs text-gray-400 mt-0.5">Enrolled {formatDate(s.createdAt)}</p>
           </div>
         </div>
-
-        {/* Status badges */}
         <div className="flex flex-wrap gap-2 mt-4">
           <StudentStatusBadge status={s.paymentStatus} type="payment" size="md" />
           <StudentStatusBadge status={s.progressStatus} type="progress" size="md" />
@@ -142,7 +139,7 @@ export default function StudentProfilePage() {
         </div>
       )}
 
-      {/* Payments section — full summary + history */}
+      {/* Payments */}
       <ReceiptPreviewModal />
       <StudentPaymentSummary
         studentId={s.id}
@@ -206,11 +203,7 @@ export default function StudentProfilePage() {
           </p>
           <button
             id="regenerate-token-btn"
-            onClick={() => {
-              if (confirm(`Regenerate login link for ${s.fullName}? The old link will stop working.`)) {
-                resetToken.mutate()
-              }
-            }}
+            onClick={() => setShowConfirmModal(true)}
             disabled={resetToken.isPending}
             className="h-11 px-4 border border-gray-200 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
@@ -226,12 +219,35 @@ export default function StudentProfilePage() {
         </div>
       )}
 
+      {/* Confirm regenerate modal */}
+      <Modal isOpen={showConfirmModal} onClose={() => setShowConfirmModal(false)} title="Regenerate Login Link">
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Are you sure you want to regenerate the login link for <strong>{s.fullName}</strong>? The old link will stop working immediately.
+          </p>
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={() => setShowConfirmModal(false)}
+              className="flex-1 h-11 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => resetToken.mutate()}
+              disabled={resetToken.isPending}
+              className="flex-1 h-11 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {resetToken.isPending ? 'Regenerating…' : 'Yes, Regenerate'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       {/* Magic link modal */}
       <Modal isOpen={showLinkModal} onClose={() => setShowLinkModal(false)} title="New Login Link">
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            A new login link has been generated. Share it with the student. The previous link is now
-            invalid.
+            A new login link has been generated. Share it with the student. The previous link is now invalid.
           </p>
           <div className="flex gap-2">
             <input

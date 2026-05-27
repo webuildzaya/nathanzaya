@@ -20,38 +20,25 @@ export default function PaymentsPage() {
     queryKey: ['payment-summary'],
     queryFn: () => fetch('/api/payments/summary').then((r) => r.json()),
     ...defaultQueryOptions,
-    refetchInterval: 60_000, // refresh every minute
+    refetchInterval: 60_000,
   })
 
   return (
     <>
-      {/* Receipt modal — rendered at page root so it overlays everything */}
       <ReceiptPreviewModal />
 
       <div className="max-w-xl mx-auto space-y-5">
-        {/* ── Page header ─────────────────────────── */}
         <div>
           <h1 className="text-xl font-bold text-gray-900">Payments</h1>
           <p className="text-sm text-gray-500 mt-0.5">Record and track student payments</p>
         </div>
 
-        {/* ── Summary cards ─────────────────────── */}
         {isSummaryLoading ? (
-          <BalanceSummaryCard
-            summary={{
-              todayTotal: 0,
-              weekTotal: 0,
-              monthTotal: 0,
-              byMethod: { CASH: 0, BANK_TRANSFER: 0, POS: 0 },
-              totalOutstanding: 0,
-            }}
-            isLoading
-          />
+          <div className="h-32 bg-gray-100 rounded-2xl animate-pulse" />
         ) : summaryData?.data ? (
           <BalanceSummaryCard summary={summaryData.data} />
         ) : null}
 
-        {/* ── Tabs ─────────────────────────────── */}
         <div className="flex gap-1 bg-gray-100 p-1 rounded-xl">
           <button
             id="tab-record-payment"
@@ -77,7 +64,6 @@ export default function PaymentsPage() {
           </button>
         </div>
 
-        {/* ── Tab content ──────────────────────── */}
         {activeTab === 'record' ? (
           <div className="bg-white border border-gray-200 rounded-2xl p-5">
             <PaymentForm />
