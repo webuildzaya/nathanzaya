@@ -23,6 +23,16 @@ export default function StudentsPage() {
   const debouncedSearch = useDebounce(search, 350)
   const [page, setPage] = useState(1)
 
+  const handleFilterChange = (value: 'ALL' | PaymentStatus) => {
+    setPaymentFilter(value)
+    setPage(1)
+  }
+
+  const handleSearch = (value: string) => {
+    setSearch(value)
+    setPage(1)
+  }
+
   const { data, isLoading } = useQuery<StudentsResponse>({
     ...defaultQueryOptions,
     queryKey: ['students', debouncedSearch, paymentFilter, page],
@@ -36,7 +46,7 @@ export default function StudentsPage() {
   })
 
   const students = data?.data ?? []
-  const pagination = (data as any)?.pagination
+  const pagination = data?.pagination
   const total = pagination?.total ?? 0
 
   return (
@@ -68,7 +78,7 @@ export default function StudentsPage() {
           id="student-search"
           type="search"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => handleSearch(e.target.value)}
           placeholder="Search by name, phone, or ID…"
           className="w-full h-12 pl-10 pr-4 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-base bg-white"
         />
@@ -79,7 +89,7 @@ export default function StudentsPage() {
         {FILTERS.map((f) => (
           <button
             key={f.value}
-            onClick={() => setPaymentFilter(f.value)}
+            onClick={() => handleFilterChange(f.value)}
             className={`flex-shrink-0 h-9 px-4 rounded-full text-sm font-medium transition-colors ${
               paymentFilter === f.value
                 ? 'bg-blue-600 text-white'
@@ -116,11 +126,13 @@ export default function StudentsPage() {
         </div>
       )}
 
-      {/* Pagination Controls */}
+      {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
         <div className="mt-6 flex items-center justify-between border-t border-gray-100 pt-4">
           <p className="text-sm text-gray-500">
-            Showing <span className="font-medium">{(pagination.page - 1) * pagination.limit + 1}</span> to{' '}
+            Showing{' '}
+            <span className="font-medium">{(pagination.page - 1) * pagination.limit + 1}</span>{' '}
+            to{' '}
             <span className="font-medium">
               {Math.min(pagination.page * pagination.limit, pagination.total)}
             </span>{' '}

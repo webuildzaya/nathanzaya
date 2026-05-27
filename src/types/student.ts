@@ -5,7 +5,7 @@ export interface CoursePackage {
   id: string
   name: string
   totalLessons: number
-  price: string // Decimal serialised as string from Prisma
+  price: string
   durationMinutes: number
   isActive: boolean
 }
@@ -52,11 +52,16 @@ export interface StudentDetail extends StudentListItem {
   outstanding: number
 }
 
+export interface Pagination {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
+
 export interface StudentsResponse {
   data: StudentListItem[]
-  total: number
-  page: number
-  pageSize: number
+  pagination: Pagination
 }
 
 export interface RegisterStudentInput {
