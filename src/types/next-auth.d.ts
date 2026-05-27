@@ -6,7 +6,14 @@ declare module 'next-auth' {
       id: string
       role: string
       schoolId: string
+      isOnboarded: boolean
     }
+  }
+
+  interface User {
+    role?: string
+    schoolId?: string
+    isOnboarded?: boolean
   }
 }
 
@@ -14,6 +21,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     role?: string
     schoolId?: string
+    isOnboarded?: boolean
   }
 }
 

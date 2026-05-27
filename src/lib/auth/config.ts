@@ -20,6 +20,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            passwordHash: true,
+            role: true,
+            schoolId: true,
+            isOnboarded: true,
+          },
         })
 
         if (!user) return null
@@ -30,19 +39,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         )
 
         if (!valid) return null
-        return { id: user.id, email: user.email, name: user.fullName }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.fullName,
+          role: user.role,
+          schoolId: user.schoolId,
+          isOnboarded: user.isOnboarded,
+        }
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { role: true, schoolId: true },
-        })
-        token.role = dbUser?.role
-        token.schoolId = dbUser?.schoolId
+        token.role = user.role
+        token.schoolId = user.schoolId
+        token.isOnboarded = user.isOnboarded
       }
       return token
     },
@@ -51,9 +65,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.sub
         session.user.role = token.role as string
         session.user.schoolId = token.schoolId as string
+        session.user.isOnboarded = token.isOnboarded as boolean
       }
       return session
     },
   },
   pages: { signIn: '/login' },
+  session: {
+    strategy: 'jwt',
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+  },
 })
