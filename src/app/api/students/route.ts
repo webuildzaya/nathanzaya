@@ -142,12 +142,13 @@ export async function POST(request: Request) {
 
   // Generate studentCode: ZYA-YEAR-XXXX
   const year = new Date().getFullYear()
-  const lastStudent = await prisma.student.findFirst({
+  const students = await prisma.student.findMany({
     where: { schoolId, studentCode: { startsWith: `ZYA-${year}-` } },
-    orderBy: { studentCode: 'desc' },
     select: { studentCode: true },
   })
-  const lastNumber = lastStudent ? parseInt(lastStudent.studentCode.split('-')[2]) : 0
+  const lastNumber = students.length > 0
+    ? Math.max(...students.map(s => parseInt(s.studentCode.split('-')[2])))
+    : 0
   const studentCode = `ZYA-${year}-${String(lastNumber + 1).padStart(4, '0')}`
 
   try {
