@@ -10,6 +10,7 @@ datasource db {
 
 model School {
   id                 String   @id @default(cuid())
+  schoolNumber       Int      @unique @default(autoincrement())
   name               String
   address            String?
   phone              String?
