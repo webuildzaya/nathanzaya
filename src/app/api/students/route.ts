@@ -102,7 +102,11 @@ export async function POST(request: Request) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { schoolId: true, role: true },
+    select: {
+      schoolId: true,
+      role: true,
+      school: { select: { schoolNumber: true } },
+    },
   })
   if (!user) return Response.json({ error: 'User not found' }, { status: 403 })
 
@@ -127,7 +131,7 @@ export async function POST(request: Request) {
   }
 
   const { fullName, phone, email, address, coursePackageId } = parsed.data
-  const { schoolId } = user
+  const { schoolId, school } = user
 
   // Validate coursePackage belongs to this school
   if (coursePackageId) {
@@ -140,16 +144,18 @@ export async function POST(request: Request) {
     }
   }
 
-  // Generate studentCode: ZYA-YEAR-XXXX
+  // Generate studentCode: ZYA-{schoolNumber}-YEAR-XXXX
   const year = new Date().getFullYear()
+  const prefix = `ZYA-${school.schoolNumber}-${year}-`
+
   const students = await prisma.student.findMany({
-    where: { schoolId, studentCode: { startsWith: `ZYA-${year}-` } },
+    where: { schoolId, studentCode: { startsWith: prefix } },
     select: { studentCode: true },
   })
   const lastNumber = students.length > 0
-    ? Math.max(...students.map(s => parseInt(s.studentCode.split('-')[2])))
+    ? Math.max(...students.map(s => parseInt(s.studentCode.split('-')[3])))
     : 0
-  const studentCode = `ZYA-${year}-${String(lastNumber + 1).padStart(4, '0')}`
+  const studentCode = `${prefix}${String(lastNumber + 1).padStart(4, '0')}`
 
   try {
     const student = await prisma.student.create({
